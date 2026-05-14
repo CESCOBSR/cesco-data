@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>떴데이 — 부산경남사업부</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F4F4F0;--card:#fff;--border:#E6E6E0;
+  --text:#1A1A18;--text2:#6B6B65;--text3:#A8A8A0;
+  --green:#1B4F3A;--green-light:#E8F2EE;--green-text:#1B4F3A;
+  --blue-bg:#E8F0FB;--blue-text:#1A4A8A;
+  --orange-bg:#FFF3E0;--orange-text:#B45309;
+  --purple-bg:#F5F0FF;--purple-text:#6D28D9;
+  --tag:#EFEFEA;--tag-t:#5A5A55;
+  --new-bg:#FEE2E2;--new-t:#DC2626;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+.banner-hero{background:#16254C;padding:24px 20px 20px;text-align:center}
+.banner-sub{color:#93C5FD;font-size:10px;font-weight:500;letter-spacing:2.5px;margin-bottom:8px}
+.banner-title{color:#fff;font-size:52px;font-weight:900;letter-spacing:-1px;line-height:1;font-family:'Arial Black',Georgia,serif}
+.banner-title span{color:#60A5FA}
+.banner-desc{color:#60A5FA;font-size:11px;font-style:italic;margin-top:8px;letter-spacing:.3px}
+.hd{background:#16254C;padding:0;position:sticky;top:0;z-index:100}
+.hd-date{color:rgba(255,255,255,.45);font-size:10px;margin-top:3px}
+.search-box{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border-radius:9px;padding:8px 11px;margin:0 14px 10px}
+.search-box input{background:none;border:none;outline:none;color:#fff;font-size:13px;font-family:inherit;width:100%}
+.search-box input::placeholder{color:rgba(255,255,255,.45)}
+.group-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.2);overflow-x:auto;scrollbar-width:none}
+.group-tabs::-webkit-scrollbar{display:none}
+.gtab{flex-shrink:0;font-size:11px;font-weight:500;padding:7px 11px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;white-space:nowrap;transition:all .15s}
+.gtab.active{color:#fff;border-bottom-color:#60A5FA}
+.branch-tabs{display:flex;gap:5px;padding:8px 10px 6px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:.5px solid var(--border);position:sticky;top:var(--hd-h,0px);z-index:90}
+.branch-tabs::-webkit-scrollbar{display:none}
+.btab{flex-shrink:0;font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;border:.5px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.btab.active{background:#16254C;color:#fff;border-color:#16254C}
+.type-wrap{display:flex;gap:5px;padding:7px 10px 5px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:.5px solid var(--border)}
+.type-wrap::-webkit-scrollbar{display:none}
+.status-wrap{display:flex;gap:5px;padding:5px 10px 7px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:.5px solid var(--border)}
+.status-wrap::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:.5px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.chip.on{background:#16254C;color:#fff;border-color:#16254C}
+.chip.type-on{background:#1A4A8A;color:#fff;border-color:#1A4A8A}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-bottom:.5px solid var(--border);padding:8px 0 6px}
+.stat{text-align:center}
+.stat-n{font-size:17px;font-weight:600;line-height:1;margin-bottom:2px}
+.stat-l{font-size:10px;color:var(--text3)}
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:5px;padding:5px;background:var(--green-light);font-size:11px;color:var(--green-text);border-bottom:.5px solid #C8DDD5}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#F59E0B}
+.sync-dot.ok{background:#22C55E}
+.list{padding:8px 10px;display:flex;flex-direction:column;gap:7px;padding-bottom:24px}
+.sec-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;padding:6px 2px 2px}
+.card{background:var(--card);border-radius:13px;border:.5px solid var(--border);padding:12px 13px;cursor:pointer;transition:transform .1s;position:relative;overflow:hidden}
+.card:active{transform:scale(.985)}
+.card.dim{opacity:.55}
+.lbar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:13px 0 0 13px}
+.lbar-none{background:var(--border)}
+.lbar-visited{background:#378ADD}
+.lbar-revisit{background:#7C3AED}
+.lbar-contract{background:#E8A020}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:5px}
+.bname{font-size:13px;font-weight:600;line-height:1.3;flex:1}
+.badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.b-unvisit{background:var(--bg);color:var(--text3)}
+.b-visited{background:var(--blue-bg);color:var(--blue-text)}
+.b-revisit{background:var(--purple-bg);color:var(--purple-text)}
+.b-contract{background:var(--orange-bg);color:var(--orange-text)}
+.cmeta{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;background:var(--tag);color:var(--tag-t)}
+.dong-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--green-light);color:var(--green-text)}
+.cat-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:#EEF2FF;color:#4338CA}
+.odate{font-size:10px;color:var(--text3)}
+.new-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--new-bg);color:var(--new-t)}
+.caddr{display:flex;align-items:flex-start;gap:3px;font-size:11px;color:var(--text2);line-height:1.4}
+.cbot{display:flex;align-items:center;gap:4px;margin-top:8px;padding-top:8px;border-top:.5px solid var(--border)}
+.assignee-txt{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:3px}
+.memo-txt{font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.panel{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;animation:up .22s ease}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:11px auto 0}
+.ph{padding:14px 16px 10px;border-bottom:.5px solid var(--border)}
+.pname{font-size:16px;font-weight:600;margin-bottom:5px}
+.pmeta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.pbody{padding:12px 16px}
+.irow{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:.5px solid var(--border)}
+.irow:last-child{border-bottom:none}
+.ilabel{font-size:11px;color:var(--text3);width:58px;flex-shrink:0;padding-top:2px}
+.ivalue{font-size:12px;color:var(--text);flex:1;line-height:1.5}
+.ivalue.link{color:var(--blue-text);text-decoration:underline;cursor:pointer}
+.iinput{width:100%;border:none;background:var(--bg);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.iinput:focus{outline:1px solid var(--green)}
+.memo-wrap{padding:0 16px 8px}
+.memo-ta{width:100%;border:.5px solid var(--border);background:var(--bg);border-radius:9px;padding:9px 11px;font-size:12px;font-family:inherit;color:var(--text);resize:none;outline:none}
+.memo-ta:focus{border-color:var(--green)}
+.pacts{padding:10px 16px 28px;display:flex;flex-direction:column;gap:7px}
+.pbtn{width:100%;font-family:inherit;font-size:13px;font-weight:500;padding:12px;border-radius:11px;border:none;cursor:pointer;transition:transform .1s}
+.pbtn:active{transform:scale(.98)}
+.pbtn-primary{background:var(--green);color:#fff}
+.pbtn-secondary{background:var(--bg);color:var(--text);border:.5px solid var(--border)}
+.pbtn-contract{background:var(--orange-bg);color:var(--orange-text);border:.5px solid #F5D8A0}
+.pbtn-revisit{background:var(--purple-bg);color:var(--purple-text);border:.5px solid #DDD0F8}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#1A1A18;color:#fff;font-size:12px;font-weight:500;padding:9px 18px;border-radius:20px;z-index:999;transition:transform .28s ease;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:40px 16px;color:var(--text3);font-size:13px}
+.loading{text-align:center;padding:60px 16px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- 배너: 스크롤 시 사라짐 -->
+<div class="banner-hero">
+  <div class="banner-sub">부산경남사업부</div>
+  <div class="banner-title">떴,Go</div>
+  <div class="banner-desc">신규정보 '떴'으니까, 빨리 가자 'Go'!</div>
+</div>
+
+<div class="hd">
+  <div class="search-box">
+    <svg width="14" height="14" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="q" placeholder="업체명 · 주소 · 동 검색" oninput="render()">
+  </div>
+  <div class="group-tabs" id="group-tabs"></div>
+</div>
+
+<div class="branch-tabs" id="branch-tabs"></div>
+<div class="type-wrap" id="type-chips"></div>
+<div class="status-wrap" id="status-chips"></div>
+
+<div class="sync-bar">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span id="sync-msg">Firebase 데이터 불러오는 중...</span>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="s-total">-</div><div class="stat-l">전체</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--text3)" id="s-unvisit">-</div><div class="stat-l">미방문</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--blue-text)" id="s-visited">-</div><div class="stat-l">방문완료</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--orange-text)" id="s-contract">-</div><div class="stat-l">계약</div></div>
+</div>
+
+<div class="list" id="list"><div class="loading">Firebase에서 데이터 불러오는 중...<br>잠시만 기다려주세요</div></div>
+
+<div class="overlay" id="ov" onclick="closePanel(event)">
+  <div class="panel" id="panel">
+    <div class="handle"></div>
+    <div class="ph"><div class="pname" id="p-name"></div><div class="pmeta" id="p-meta"></div></div>
+    <div class="pbody" id="p-body"></div>
+    <div class="memo-wrap"><textarea class="memo-ta" id="p-memo" rows="2" placeholder="메모 · 특이사항" oninput="saveMemo()"></textarea></div>
+    <div class="pacts" id="p-acts"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// 헤더 높이 측정 → 지사탭 sticky top 자동 설정
+function setHdHeight() {
+  const hd = document.querySelector('.hd');
+  if (hd) document.documentElement.style.setProperty('--hd-h', hd.offsetHeight + 'px');
+}
+window.addEventListener('load', setHdHeight);
+window.addEventListener('resize', setHdHeight);
+
+// ★ Firebase 설정
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAUgbO8NsRBqxg5uJAk6GD8YWHUJ8fbNdI",
+  authDomain: "cescobsr.firebaseapp.com",
+  databaseURL: "https://cescobsr-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "cescobsr",
+  storageBucket: "cescobsr.firebasestorage.app",
+  messagingSenderId: "79354304735",
+  appId: "1:79354304735:web:cb33bcd1f7de6dc4e6f16a"
+};
+
+const BRANCH_GROUP = {
+  "부산동부": ["해운대지사","부산수영지사","부산기장지사","부산동래지사","부산북부지사"],
+  "부산서부": ["김해북부지사","김해남부지사","부산진구지사","부산남부지사","부산서부지사","부산사하지사"],
+  "울산양산": ["양산지사","울산서부지사","울산남부지사","울산북부지사","울산중부지사"],
+  "경남동부": ["창원서부지사","창원남부지사","창원동부지사","창원북부지사"],
+  "경남서부": ["진주서부지사","진주동부지사","거제통영지사","사천남해지사"],
+};
+const BRANCH_LIST = Object.values(BRANCH_GROUP).flat();
+const CATEGORIES = ["전체","일반음식점","휴게음식점","숙박","의원","식품제조","제과점","축산가공"];
+const STATUS_LIST = ["전체","미방문","방문완료","재방문예정","계약완료"];
+
+const TODAY = new Date();
+const CUTOFF_NEW = new Date(TODAY - 30*86400000).toISOString().slice(0,10);
+const hdDate = document.getElementById('hd-date');
+if(hdDate) hdDate.textContent = TODAY.toLocaleDateString('ko-KR',{month:'long',day:'numeric'});
+
+let DATA = {};    // key → 업체정보
+let STATUS = {};  // key → 상태정보
+let db = null;
+
+let curGroup    = '전체';
+let curBranch   = '전체';
+let curCategory = '전체';
+let curStatus   = '전체';
+let curId       = null;
+
+// Firebase 초기화
+firebase.initializeApp(FIREBASE_CONFIG);
+db = firebase.database();
+
+// 업체 정보 실시간 수신
+db.ref('data').on('value', snap => {
+  DATA = snap.val() || {};
+  mergeAndRender();
+  document.getElementById('sync-dot').className = 'sync-dot ok';
+  document.getElementById('sync-msg').textContent =
+    `실시간 연동 중 · 총 ${Object.keys(DATA).length.toLocaleString()}개`;
+}, err => {
+  document.getElementById('sync-msg').textContent = '연결 오류 — 새로고침 해주세요';
+});
+
+// 상태 정보 실시간 수신
+db.ref('status').on('value', snap => {
+  STATUS = snap.val() || {};
+  mergeAndRender();
+});
+
+function mergeAndRender() {
+  if (!Object.keys(DATA).length) return;
+  renderGroupTabs();
+  renderBranchTabs();
+  renderTypeChips();
+  renderStatusChips();
+  render();
+}
+
+function fbKey(id) { return id.replace(/[.#$/\[\]]/g,'_'); }
+
+function getRecord(key) {
+  const d = DATA[key] || {};
+  const s = STATUS[key] || {};
+  return {
+    ...d,
+    status:    s.status    || '미방문',
+    assignee:  s.assignee  || '',
+    visitDate: s.visitDate || '',
+    memo:      s.memo      || '',
+    contract:  s.contract  || '미계약',
+  };
+}
+
+// 탭 렌더
+function renderGroupTabs() {
+  const groups = ['전체', ...Object.keys(BRANCH_GROUP)];
+  document.getElementById('group-tabs').innerHTML = groups.map(g =>
+    `<button class="gtab${g===curGroup?' active':''}" onclick="setGroup('${g}')">${g}</button>`
+  ).join('');
+}
+
+function renderBranchTabs() {
+  const branches = curGroup === '전체'
+    ? ['전체', ...BRANCH_LIST]
+    : ['전체', ...BRANCH_GROUP[curGroup]];
+  document.getElementById('branch-tabs').innerHTML = branches.map(b =>
+    `<button class="btab${b===curBranch?' active':''}" onclick="setBranch('${b}')">${b}</button>`
+  ).join('');
+}
+
+function renderTypeChips() {
+  document.getElementById('type-chips').innerHTML = CATEGORIES.map(c =>
+    `<button class="chip${c===curCategory?' type-on':''}" onclick="setCat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function renderStatusChips() {
+  document.getElementById('status-chips').innerHTML = STATUS_LIST.map(s =>
+    `<button class="chip${s===curStatus?' on':''}" onclick="setSt('${s}')">${s}</button>`
+  ).join('');
+}
+
+function setGroup(g)   { curGroup=g; curBranch='전체'; renderGroupTabs(); renderBranchTabs(); render(); }
+function setBranch(b)  { curBranch=b; renderBranchTabs(); render(); }
+function setCat(c)     { curCategory=c; renderTypeChips(); render(); }
+function setSt(s)      { curStatus=s; renderStatusChips(); render(); }
+
+// 필터
+function getFiltered() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  return Object.keys(DATA).map(key => getRecord(key)).filter(d => {
+    if (curBranch !== '전체' && d.branch !== curBranch) return false;
+    if (curBranch === '전체' && curGroup !== '전체') {
+      if (!BRANCH_GROUP[curGroup]?.includes(d.branch)) return false;
+    }
+    if (curCategory !== '전체' && d.category !== curCategory) return false;
+    if (curStatus === '계약완료' && d.contract !== '계약완료') return false;
+    else if (curStatus !== '전체' && curStatus !== '계약완료' && d.status !== curStatus) return false;
+    if (q && !d.name?.toLowerCase().includes(q) && !d.addr?.toLowerCase().includes(q) && !d.dong?.includes(q)) return false;
+    return true;
+  });
+}
+
+// 통계
+function updateStats(list) {
+  document.getElementById('s-total').textContent    = list.length;
+  document.getElementById('s-unvisit').textContent  = list.filter(d=>d.status==='미방문').length;
+  document.getElementById('s-visited').textContent  = list.filter(d=>d.status==='방문완료').length;
+  document.getElementById('s-contract').textContent = list.filter(d=>d.contract==='계약완료').length;
+}
+
+// 배지
+function badgeHtml(d) {
+  if (d.contract==='계약완료') return '<span class="badge b-contract">계약완료</span>';
+  if (d.status==='방문완료')   return '<span class="badge b-visited">방문완료</span>';
+  if (d.status==='재방문예정') return '<span class="badge b-revisit">재방문예정</span>';
+  return '<span class="badge b-unvisit">미방문</span>';
+}
+function lbarClass(d) {
+  if (d.contract==='계약완료') return 'lbar-contract';
+  if (d.status==='방문완료')   return 'lbar-visited';
+  if (d.status==='재방문예정') return 'lbar-revisit';
+  return 'lbar-none';
+}
+
+function cardHtml(d) {
+  const key = fbKey(d.id||'');
+  const isNew = d.openDate >= CUTOFF_NEW;
+  const dim = (d.status==='방문완료' && d.contract!=='계약완료') ? ' dim' : '';
+  const bot = (d.assignee||d.memo) ? `<div class="cbot">
+    ${d.assignee?`<div class="assignee-txt"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>${d.assignee}</div>`:''}
+    ${d.memo?`<div class="memo-txt">${d.memo}</div>`:''}
+  </div>` : '';
+  return `<div class="card${dim}" onclick="openPanel('${key}')">
+    <div class="lbar ${lbarClass(d)}"></div>
+    <div class="ct"><div class="bname">${d.name||''}</div>${badgeHtml(d)}</div>
+    <div class="cmeta">
+      <span class="tag">${d.type||''}</span>
+      <span class="cat-tag">${d.category||''}</span>
+      ${d.dong?`<span class="dong-tag">${d.dong}</span>`:''}
+      <span class="odate">개업 ${d.openDate||''}</span>
+      ${isNew?'<span class="new-tag">NEW</span>':''}
+    </div>
+    <div class="caddr">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      ${d.addr||''}
+    </div>${bot}
+  </div>`;
+}
+
+function render() {
+  if (!Object.keys(DATA).length) return;
+  const list = getFiltered();
+  list.sort((a,b) => (b.openDate||'').localeCompare(a.openDate||''));
+  updateStats(list);
+  const wrap = document.getElementById('list');
+  if (!list.length) { wrap.innerHTML = '<div class="empty">검색 결과가 없습니다</div>'; return; }
+  const newItems = list.filter(d => d.openDate >= CUTOFF_NEW);
+  const oldItems = list.filter(d => d.openDate < CUTOFF_NEW);
+  let html = '';
+  if (newItems.length) html += `<div class="sec-label">신규 개업 (30일 이내) · ${newItems.length}건</div>` + newItems.map(cardHtml).join('');
+  if (oldItems.length) html += `<div class="sec-label" style="margin-top:6px">이전 데이터 · ${oldItems.length}건</div>` + oldItems.map(cardHtml).join('');
+  wrap.innerHTML = html;
+}
+
+// 상세 패널
+function openPanel(key) {
+  curId = key;
+  const d = getRecord(key);
+  document.getElementById('p-name').textContent = d.name||'';
+  document.getElementById('p-meta').innerHTML =
+    `${badgeHtml(d)}<span class="tag">${d.type||''}</span><span class="cat-tag">${d.category||''}</span>`
+    + (d.dong?`<span class="dong-tag">${d.dong}</span>`:'')
+    + (d.openDate>=CUTOFF_NEW?'<span class="new-tag">NEW</span>':'');
+
+  document.getElementById('p-body').innerHTML = `
+    <div class="irow"><div class="ilabel">개업일</div><div class="ivalue">${d.openDate||''}</div></div>
+    <div class="irow"><div class="ilabel">업종</div><div class="ivalue">${d.category||''} · ${d.type||''}</div></div>
+    <div class="irow"><div class="ilabel">지사</div><div class="ivalue">${d.branch||''}</div></div>
+    <div class="irow"><div class="ilabel">주소</div>
+      <div class="ivalue link" onclick="openMap('${(d.addr||'').replace(/'/g,"\\'")}')">
+        ${d.addr||''} <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+    </div>
+    <div class="irow"><div class="ilabel">담당자</div>
+      <div class="ivalue"><input class="iinput" type="text" value="${d.assignee||''}" placeholder="이름 입력"
+        oninput="updateStatus('${key}','assignee',this.value)"></div>
+    </div>
+    <div class="irow"><div class="ilabel">방문날짜</div>
+      <div class="ivalue"><input class="iinput" type="date" value="${d.visitDate||''}"
+        oninput="updateStatus('${key}','visitDate',this.value)"></div>
+    </div>`;
+
+  document.getElementById('p-memo').value = d.memo||'';
+
+  let acts = '';
+  if (d.contract !== '계약완료') {
+    if (d.status === '미방문') {
+      acts += `<button class="pbtn pbtn-primary" onclick="setStat('${key}','방문완료')">방문완료로 변경</button>`;
+      acts += `<button class="pbtn pbtn-revisit" onclick="setStat('${key}','재방문예정')">재방문 예정으로 변경</button>`;
+    } else if (d.status === '재방문예정') {
+      acts += `<button class="pbtn pbtn-primary" onclick="setStat('${key}','방문완료')">방문완료로 변경</button>`;
+      acts += `<button class="pbtn pbtn-contract" onclick="setContract('${key}')">계약완료로 변경</button>`;
+      acts += `<button class="pbtn pbtn-secondary" onclick="setStat('${key}','미방문')">미방문으로 되돌리기</button>`;
+    } else {
+      acts += `<button class="pbtn pbtn-contract" onclick="setContract('${key}')">계약완료로 변경</button>`;
+      acts += `<button class="pbtn pbtn-secondary" onclick="setStat('${key}','미방문')">미방문으로 되돌리기</button>`;
+    }
+  } else {
+    acts += `<button class="pbtn pbtn-secondary" onclick="setContract('${key}',true)">계약 취소</button>`;
+  }
+  document.getElementById('p-acts').innerHTML = acts;
+  document.getElementById('ov').classList.add('open');
+}
+
+function closePanel(e) {
+  if (e.target === document.getElementById('ov'))
+    document.getElementById('ov').classList.remove('open');
+}
+
+function updateStatus(key, field, value) {
+  if (!STATUS[key]) STATUS[key] = {};
+  STATUS[key][field] = value;
+  db.ref(`status/${key}/${field}`).set(value);
+}
+
+function saveMemo() {
+  if (curId) updateStatus(curId, 'memo', document.getElementById('p-memo').value);
+}
+
+function setStat(key, s) {
+  if (!STATUS[key]) STATUS[key] = {};
+  STATUS[key].status = s;
+  if (s==='방문완료' && !STATUS[key].visitDate)
+    STATUS[key].visitDate = TODAY.toISOString().slice(0,10);
+  db.ref(`status/${key}`).update({
+    status: s,
+    visitDate: STATUS[key].visitDate||''
+  });
+  toast(s + '로 변경됐어요');
+  openPanel(key);
+}
+
+function setContract(key, cancel) {
+  if (!STATUS[key]) STATUS[key] = {};
+  if (cancel) {
+    STATUS[key].contract = '미계약';
+    db.ref(`status/${key}/contract`).set('미계약');
+    toast('계약이 취소됐어요');
+  } else {
+    STATUS[key].contract = '계약완료';
+    STATUS[key].status   = '방문완료';
+    db.ref(`status/${key}`).update({contract:'계약완료', status:'방문완료'});
+    toast('계약완료로 변경됐어요');
+  }
+  openPanel(key);
+}
+
+function openMap(addr) { window.open('https://map.kakao.com/link/search/'+encodeURIComponent(addr),'_blank'); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
