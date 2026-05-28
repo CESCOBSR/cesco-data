@@ -1,0 +1,22 @@
+{
+  "name": "떴,GO — 부산경남사업부",
+  "short_name": "떴,GO",
+  "description": "신규는 빠를수록 내꺼!",
+  "start_url": "./cesco_app_v5.html",
+  "display": "standalone",
+  "background_color": "#16254C",
+  "theme_color": "#16254C",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "tteotgo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "tteotgo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
