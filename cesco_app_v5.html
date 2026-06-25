@@ -151,6 +151,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
 .loc-btn-wrap{position:relative;width:100%;}
 .loc-btn{position:absolute;right:12px;bottom:12px;width:44px;height:44px;border-radius:50%;background:#16254C;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.25);z-index:10;}
 .loc-btn svg{width:22px;height:22px;}
+
+/* 맨 위로 버튼 */
+#top-btn{position:fixed;bottom:72px;right:16px;width:44px;height:44px;border-radius:50%;background:#16254C;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.25);z-index:499;transition:opacity .2s;}
+#top-btn.show{display:flex;}
+#top-btn svg{width:20px;height:20px;}
 </style>
 </head>
 <body>
@@ -237,6 +242,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
   </div>
 </div>
 
+<!-- 맨 위로 버튼 -->
+<button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="맨 위로">
+  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+</button>
+
 <!-- 관리자 다운로드 버튼 (하단 고정) -->
 <div style="position:fixed;bottom:20px;right:16px;z-index:500;">
   <button onclick="openAdminModal()" style="background:#1A2E5A;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:12px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,0.2);cursor:pointer;">
@@ -263,6 +275,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
 </div>
 
 <script>
+// 맨 위로 버튼 스크롤 감지
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('top-btn');
+  if (window.scrollY > 300) btn.classList.add('show');
+  else btn.classList.remove('show');
+});
+
 // 헤더 높이 측정 → 지사탭 sticky top 자동 설정
 function setHdHeight() {
   const hd = document.querySelector('.hd');
