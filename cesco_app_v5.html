@@ -156,6 +156,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
 #top-btn{position:fixed;bottom:72px;right:16px;width:44px;height:44px;border-radius:50%;background:#16254C;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.25);z-index:499;transition:opacity .2s;}
 #top-btn.show{display:flex;}
 #top-btn svg{width:20px;height:20px;}
+
+/* 업데이트 공지 팝업 */
+#notice-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-end;justify-content:center;}
+#notice-ov.open{display:flex;}
+#notice-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:82vh;display:flex;flex-direction:column;animation:up .22s ease;overflow:hidden;}
+#notice-head{padding:18px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--border);flex-shrink:0;}
+#notice-head-title{font-size:16px;font-weight:800;color:#16254C;}
+#notice-close-x{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--text3);padding:0 4px;}
+#notice-body{padding:14px 18px 6px;overflow-y:auto;flex:1;}
+.notice-item{display:flex;gap:10px;padding:12px 0;border-bottom:.5px solid var(--border);}
+.notice-item:last-child{border-bottom:none;}
+.notice-icon{font-size:19px;flex-shrink:0;line-height:1.4;}
+.notice-item-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.notice-item-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+#notice-foot{padding:12px 18px 18px;border-top:.5px solid var(--border);flex-shrink:0;}
+.notice-dismiss-row{display:flex;gap:8px;margin-bottom:10px;}
+.notice-dismiss-btn{flex:1;font-size:12px;padding:9px 0;border-radius:9px;border:.5px solid var(--border);background:var(--tag);color:var(--tag-t);cursor:pointer;}
+#notice-confirm-btn{width:100%;padding:12px 0;border-radius:11px;border:none;background:#16254C;color:#fff;font-size:14px;font-weight:700;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -223,6 +241,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
     <div class="pbody" id="p-body"></div>
     <div class="memo-wrap"><textarea class="memo-ta" id="p-memo" rows="2" placeholder="메모 · 특이사항" oninput="saveMemo()"></textarea></div>
     <div class="pacts" id="p-acts"></div>
+  </div>
+</div>
+
+<!-- 업데이트 공지 팝업 -->
+<div id="notice-ov" onclick="if(event.target===this) closeNotice()">
+  <div id="notice-sheet">
+    <div id="notice-head">
+      <div id="notice-head-title">📢 업데이트 안내</div>
+      <button id="notice-close-x" onclick="closeNotice()">×</button>
+    </div>
+    <div id="notice-body">
+      <div class="notice-item">
+        <div class="notice-icon">🔴</div>
+        <div>
+          <div class="notice-item-title">3분기 레드존 지역 재지정</div>
+          <div class="notice-item-desc">경쟁사 탈환 대상 상권(레드존)이 3분기 기준으로 새롭게 지정됐습니다. 해당 지역 업체 카드에는 🔴레드존 뱃지가 표시됩니다.</div>
+        </div>
+      </div>
+      <div class="notice-item">
+        <div class="notice-icon">📍</div>
+        <div>
+          <div class="notice-item-title">내 주위 미계약 고객사 보기</div>
+          <div class="notice-item-desc">상단 배너의 위치 버튼을 누르면, 현재 내 위치 기준으로 주변 미접촉 고객사를 지도에서 바로 확인할 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+    <div id="notice-foot">
+      <div class="notice-dismiss-row">
+        <button class="notice-dismiss-btn" onclick="dismissNotice(1)">오늘 하루 보지 않기</button>
+        <button class="notice-dismiss-btn" onclick="dismissNotice(7)">일주일 동안 보지 않기</button>
+      </div>
+      <button id="notice-confirm-btn" onclick="closeNotice()">확인</button>
+    </div>
   </div>
 </div>
 
@@ -471,7 +522,27 @@ let curPeriod   = '전체';
 let curId       = null;
 
 // Firebase 초기화 및 앱 시작 (비밀번호 인증 후 호출)
+// ★ 업데이트 공지 팝업
+// 새 공지를 올릴 때는 이 버전 문자열만 바꾸면, 예전에 "일주일 안 보기"를 누른 사람에게도 다시 노출됩니다.
+const NOTICE_VERSION = '2026-q3-redzone';
+function showNoticeIfNeeded() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('bsr_notice_dismiss') || '{}');
+    if (saved.version === NOTICE_VERSION && saved.until && Date.now() < saved.until) return;
+  } catch (e) {}
+  document.getElementById('notice-ov').classList.add('open');
+}
+function closeNotice() {
+  document.getElementById('notice-ov').classList.remove('open');
+}
+function dismissNotice(days) {
+  const until = Date.now() + days * 24 * 60 * 60 * 1000;
+  localStorage.setItem('bsr_notice_dismiss', JSON.stringify({ version: NOTICE_VERSION, until }));
+  closeNotice();
+}
+
 function initApp() {
+  showNoticeIfNeeded();
   if (db) return; // 이미 초기화된 경우 중복 방지
   firebase.initializeApp(FIREBASE_CONFIG);
   db = firebase.database();
