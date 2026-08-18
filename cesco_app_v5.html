@@ -945,11 +945,19 @@ let kakaoMap = null;
 let mapMarkers = [];
 let myMarker = null;
 let myWatchId = null;
+let mapModalHistoryPushed = false; // 뒤로가기(안드로이드 하드웨어 버튼) 대응용
 
 function openMapModal() {
   const modal = document.getElementById('map-modal');
   modal.classList.add('open');
   document.getElementById('map-loading').style.display = 'block';
+
+  // ★ 안드로이드 뒤로가기 버튼을 눌러도 앱이 통째로 종료되지 않고
+  //   지도 팝업만 닫히도록, 팝업을 열 때 히스토리에 더미 상태를 하나 쌓아둔다.
+  if (!mapModalHistoryPushed) {
+    history.pushState({ cescoModal: 'map' }, '');
+    mapModalHistoryPushed = true;
+  }
 
   if (!navigator.geolocation) {
     toast('위치 정보를 지원하지 않는 브라우저입니다');
@@ -1082,9 +1090,28 @@ function initKakaoMap(myLat, myLng) {
 
 function closeMapModal(e) {
   if (e && e.target !== document.getElementById('map-modal')) return;
-  document.getElementById('map-modal').classList.remove('open');
+  const modal = document.getElementById('map-modal');
+  if (!modal.classList.contains('open')) return;
+  modal.classList.remove('open');
   stopWatchingMyLocation(); // 지도 닫으면 위치 감시도 중단 (배터리 절약)
+  // ★ UI(배경 탭/닫기 버튼)로 닫은 경우, 열 때 쌓아둔 히스토리 더미 상태를 되돌려서
+  //   다음 뒤로가기 버튼이 엉뚱한 곳으로 튀지 않게 정리한다.
+  if (mapModalHistoryPushed) {
+    mapModalHistoryPushed = false;
+    history.back();
+  }
 }
+
+// ★ 안드로이드 뒤로가기(제스처 포함) 대응: 지도 팝업이 열려있을 때 뒤로가기를 누르면
+//   앱을 종료하지 않고 팝업만 닫는다.
+window.addEventListener('popstate', () => {
+  const modal = document.getElementById('map-modal');
+  if (modal && modal.classList.contains('open')) {
+    modal.classList.remove('open');
+    stopWatchingMyLocation();
+    mapModalHistoryPushed = false;
+  }
+});
 
 function toast(msg) {
   const t = document.getElementById('toast');
