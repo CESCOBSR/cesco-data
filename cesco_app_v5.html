@@ -639,6 +639,22 @@ function getRecord(key) {
   };
 }
 
+// ★ 접촉이력 여부: 방문/담당자 지정/메모/방문일자/계약 중 하나라도 있으면 "접촉이력 있음"
+function hasContactHistory(key) {
+  const s = STATUS[key];
+  if (!s) return false;
+  return (s.status && s.status !== '미방문') || !!s.assignee || !!s.memo || !!s.visitDate || s.contract === '계약완료';
+}
+
+// ★ 접촉이력이 없고 개업일로부터 90일(3개월)이 지난 건은 "만료"로 간주
+const EXPIRE_DAYS = 90;
+function isExpiredNoContact(d, key) {
+  if (hasContactHistory(key)) return false;
+  if (!d.openDate) return false;
+  const dExpire = new Date(TODAY - EXPIRE_DAYS*86400000).toISOString().slice(0,10);
+  return d.openDate < dExpire;
+}
+
 // 탭 렌더
 function renderGroupTabs() {
   const groups = ['전체', ...Object.keys(BRANCH_GROUP)];
@@ -1015,23 +1031,27 @@ function initKakaoMap(myLat, myLng) {
   mapMarkers.push(myMarker);
 
   // 미계약 업체 (현재 필터 기준, lat/lng 있는 것만)
-  // ※ 기존 코드는 '미방문' 상태 기준으로 걸러서, 방문은 했지만 아직 계약 전인 곳이
-  //   지도에 안 뜨는 문제가 있었음 → 계약여부(contract) 기준으로 수정
+  // ※ 계약완료는 제외
+  // ※ 접촉이력이 없고 개업 90일이 지난 건은 만료로 간주해 제외 (접촉이력 있으면 90일 지나도 계속 표시)
+  let noCoordCount = 0;
   const uncontracted = Object.keys(DATA)
-    .map(key => getRecord(key))
-    .filter(d => {
+    .map(key => ({ key, d: getRecord(key) }))
+    .filter(({ key, d }) => {
       if (d.contract === '계약완료') return false;
-      if (!d.lat || !d.lng) return false;
+      if (isExpiredNoContact(d, key)) return false;
       if (curBranch !== '전체' && d.branch !== curBranch) return false;
       if (curBranch === '전체' && curGroup !== '전체') {
         if (!BRANCH_GROUP[curGroup]?.includes(d.branch)) return false;
       }
       if (curCategory !== '전체' && d.category !== curCategory) return false;
+      if (!d.lat || !d.lng) { noCoordCount++; return false; }
       return true;
-    });
+    })
+    .map(({ d }) => d);
 
-  document.getElementById('map-subtitle').textContent =
-    `미계약 ${uncontracted.length}개 업체 표시 중`;
+  document.getElementById('map-subtitle').textContent = noCoordCount
+    ? `미계약 ${uncontracted.length}개 업체 표시 중 (좌표 없어 제외 ${noCoordCount}건)`
+    : `미계약 ${uncontracted.length}개 업체 표시 중`;
 
   let openInfo = null;
 
