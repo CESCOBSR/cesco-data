@@ -264,8 +264,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
       <div class="notice-item">
         <div class="notice-icon">📍</div>
         <div>
-          <div class="notice-item-title">내 주위 미계약 고객사 보기</div>
-          <div class="notice-item-desc">상단 배너의 위치 버튼을 누르면, 현재 내 위치 기준으로 주변 미접촉 고객사를 지도에서 바로 확인할 수 있습니다.</div>
+          <div class="notice-item-title">내 주위 미계약 고객사 보기 업데이트</div>
+          <div class="notice-item-desc">상단 배너의 위치 버튼을 누르면, 현재 내 위치 기준 주변 미계약 고객사를 지도에서 바로 확인할 수 있습니다. 최신 업데이트된 신규 업체까지 빠짐없이 미계약으로 반영되도록 개선했습니다.</div>
         </div>
       </div>
     </div>
@@ -566,7 +566,7 @@ function saveViewState() {
 // Firebase 초기화 및 앱 시작 (비밀번호 인증 후 호출)
 // ★ 업데이트 공지 팝업
 // 새 공지를 올릴 때는 이 버전 문자열만 바꾸면, 예전에 "일주일 안 보기"를 누른 사람에게도 다시 노출됩니다.
-const NOTICE_VERSION = '2026-q3-redzone';
+const NOTICE_VERSION = '2026-q3-redzone-mapfix';
 function showNoticeIfNeeded() {
   try {
     const saved = JSON.parse(localStorage.getItem('bsr_notice_dismiss') || '{}');
