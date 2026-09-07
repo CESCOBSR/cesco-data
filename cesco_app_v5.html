@@ -539,7 +539,7 @@ let firstDataLoad = true;
 // PWA가 잠시 백그라운드에 있다가 브라우저/OS에 의해 새로 로드되어도
 // 필터·검색어·스크롤 위치를 그대로 이어서 보여주기 위함
 try {
-  const savedView = JSON.parse(localStorage.getItem('bsr_view_state') || 'null');
+  const savedView = JSON.parse(sessionStorage.getItem('bsr_view_state') || 'null');
   if (savedView) {
     curGroup    = savedView.curGroup    || '전체';
     curBranch   = savedView.curBranch   || '전체';
@@ -554,7 +554,7 @@ try {
 
 function saveViewState() {
   try {
-    localStorage.setItem('bsr_view_state', JSON.stringify({
+    sessionStorage.setItem('bsr_view_state', JSON.stringify({
       curGroup, curBranch, curCategory, curStatus, curPeriod,
       q: document.getElementById('q')?.value || '',
       scrollY: window.scrollY,
@@ -779,7 +779,7 @@ function cardHtml(d) {
 const PAGE_SIZE = 50;
 let currentPage = (function () {
   try {
-    const v = JSON.parse(localStorage.getItem('bsr_view_state') || 'null');
+    const v = JSON.parse(sessionStorage.getItem('bsr_view_state') || 'null');
     return (v && v.currentPage) || 1;
   } catch (e) { return 1; }
 })();
@@ -1024,7 +1024,7 @@ function initKakaoMap(myLat, myLng) {
   // 내 위치 마커 (동그란 파란 점 스타일 — 위치가 바뀌면 setPosition으로 이동)
   const myMarkerImg = new kakao.maps.MarkerImage(
     'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="8" fill="#2563EB" stroke="#fff" stroke-width="3"/><circle cx="14" cy="14" r="13" fill="#2563EB" fill-opacity="0.2"/></svg>'
+      '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="8" fill="#DC2626" stroke="#fff" stroke-width="3"/><circle cx="14" cy="14" r="13" fill="#DC2626" fill-opacity="0.2"/></svg>'
     ),
     new kakao.maps.Size(28, 28),
     { offset: new kakao.maps.Point(14, 14) }
@@ -1046,6 +1046,7 @@ function initKakaoMap(myLat, myLng) {
     .map(key => ({ key, d: getRecord(key) }))
     .filter(({ key, d }) => {
       if (d.contract === '계약완료') return false;
+      if (d.status === '방문완료' || d.status === '재방문예정') return false;
       if (isExpiredNoContact(d, key)) return false;
       if (curBranch !== '전체' && d.branch !== curBranch) return false;
       if (curBranch === '전체' && curGroup !== '전체') {
@@ -1058,8 +1059,8 @@ function initKakaoMap(myLat, myLng) {
     .map(({ d }) => d);
 
   document.getElementById('map-subtitle').textContent = noCoordCount
-    ? `미계약 ${uncontracted.length}개 업체 표시 중 (좌표 없어 제외 ${noCoordCount}건)`
-    : `미계약 ${uncontracted.length}개 업체 표시 중`;
+    ? `미접촉 ${uncontracted.length}개 업체 표시 중 (좌표 없어 제외 ${noCoordCount}건)`
+    : `미접촉 ${uncontracted.length}개 업체 표시 중`;
 
   let openInfo = null;
 
