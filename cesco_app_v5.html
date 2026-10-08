@@ -257,8 +257,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-ser
       <div class="notice-item">
         <div class="notice-icon">🔴</div>
         <div>
-          <div class="notice-item-title">3분기 레드존 지역 재지정</div>
-          <div class="notice-item-desc">경쟁사 탈환 대상 상권(레드존)이 3분기 기준으로 새롭게 지정됐습니다. 해당 지역 업체 카드에는 🔴레드존 뱃지가 표시됩니다.</div>
+          <div class="notice-item-title">4분기 레드존 지역 변경</div>
+          <div class="notice-item-desc">4분기를 맞아 각 지사에서 직접 지정한 레드존으로 변경했습니다. 해당 지역 업체 카드에는 🔴레드존 뱃지가 표시됩니다.</div>
         </div>
       </div>
       <div class="notice-item">
@@ -385,92 +385,88 @@ const FIREBASE_CONFIG = {
   appId: "1:79354304735:web:cb33bcd1f7de6dc4e6f16a"
 };
 
-// ★ 레드존 (2026 Q3 재지정)
+// ★ 레드존 (2026 Q4 — 각 지사에서 직접 지정)
+// b: 지사명 / si: 주소에 포함돼야 하는 시·군·구 / dong: 동·읍·면
+// 지사(branch)까지 함께 맞춰서, 다른 지역의 같은 동 이름(중구·북구 등)이 섞이지 않게 함
 const REDZONE = [
   // 거제통영지사
-  {si:'거제시',   dong:'옥포동'},
+  {b:'거제통영지사', si:'통영시',   dong:'광도면'},
   // 김해남부지사
-  {si:'김해시',   dong:'내동'},
-  {si:'김해시',   dong:'대청동'},
+  {b:'김해남부지사', si:'김해시',   dong:'율하동'},
   // 김해북부지사
-  {si:'김해시',   dong:'어방동'},
-  {si:'김해시',   dong:'진영읍'},
+  {b:'김해북부지사', si:'김해시',   dong:'동상동'},
+  {b:'김해북부지사', si:'김해시',   dong:'부원동'},
+  {b:'김해북부지사', si:'김해시',   dong:'서상동'},
+  {b:'김해북부지사', si:'김해시',   dong:'진영읍'},
   // 부산기장지사
-  {si:'기장군',   dong:'일광읍'},
-  {si:'기장군',   dong:'정관읍'},
+  {b:'부산기장지사', si:'기장군',   dong:'기장읍'},
+  {b:'부산기장지사', si:'기장군',   dong:'정관읍'},
   // 부산남부지사
-  {si:'남구',     dong:'대연동',  city:'부산'},
-  {si:'남구',     dong:'문현동',  city:'부산'},
-  {si:'중구',     dong:'부평동',  city:'부산'},
+  {b:'부산남부지사', si:'중구',     dong:'부평동'},
   // 부산동래지사
-  {si:'동래구',   dong:'사직동'},
-  {si:'연제구',   dong:'연산동'},
+  {b:'부산동래지사', si:'동래구',   dong:'사직동'},
+  {b:'부산동래지사', si:'동래구',   dong:'온천동'},
+  {b:'부산동래지사', si:'연제구',   dong:'거제동'},
+  {b:'부산동래지사', si:'연제구',   dong:'연산동'},
+  {b:'부산동래지사', si:'연제구',   dong:'온천동'},
   // 부산북부지사
-  {si:'금정구',   dong:'구서동'},
-  {si:'금정구',   dong:'장전동'},
-  {si:'북구',     dong:'덕천동',  city:'부산'},
+  {b:'부산북부지사', si:'북구',     dong:'구포동'},
+  {b:'부산북부지사', si:'북구',     dong:'덕천동'},
+  {b:'부산북부지사', si:'북구',     dong:'화명동'},
   // 부산사하지사
-  {si:'사하구',   dong:'하단동'},
+  {b:'부산사하지사', si:'사하구',   dong:'하단동'},
   // 부산서부지사
-  {si:'강서구',   dong:'명지동',  city:'부산'},
-  {si:'사상구',   dong:'괘법동'},
+  {b:'부산서부지사', si:'강서구',   dong:'명지동'},
+  {b:'부산서부지사', si:'사상구',   dong:'주례동'},
   // 부산수영지사
-  {si:'수영구',   dong:'광안동'},
-  {si:'해운대구', dong:'반여동'},
+  {b:'부산수영지사', si:'수영구',   dong:'민락동'},
+  {b:'부산수영지사', si:'해운대구', dong:'재송동'},
   // 부산진구지사
-  {si:'부산진구', dong:'부전동'},
+  {b:'부산진구지사', si:'부산진구', dong:'전포동'},
   // 사천남해지사
-  {si:'사천시',   dong:'송포동'},
-  {si:'사천시',   dong:'실안동'},
-  {si:'하동군',   dong:'화개면'},
-  {si:'하동군',   dong:'하동읍'},
+  {b:'사천남해지사', si:'남해군',   dong:'남해읍'},
+  {b:'사천남해지사', si:'남해군',   dong:'창선면'},
   // 양산지사
-  {si:'양산시',   dong:'물금읍'},
+  {b:'양산지사',     si:'양산시',   dong:'물금읍'},
+  {b:'양산지사',     si:'양산시',   dong:'평산동'},
   // 울산남부지사
-  {si:'남구',     dong:'달동',    city:'울산'},
-  {si:'남구',     dong:'삼산동',  city:'울산'},
+  {b:'울산남부지사', si:'남구',     dong:'신정동'},
   // 울산북부지사
-  {si:'북구',     dong:'매곡동',  city:'울산'},
+  {b:'울산북부지사', si:'북구',     dong:'송정동'},
   // 울산서부지사
-  {si:'울주군',   dong:'온산읍'},
-  {si:'울주군',   dong:'청량읍'},
+  {b:'울산서부지사', si:'울주군',   dong:'온산읍'},
+  {b:'울산서부지사', si:'울주군',   dong:'온양읍'},
   // 울산중부지사
-  {si:'동구',     dong:'일산동',  city:'울산'},
-  {si:'동구',     dong:'화정동',  city:'울산'},
-  {si:'중구',     dong:'성남동',  city:'울산'},
-  {si:'중구',     dong:'옥교동',  city:'울산'},
+  {b:'울산중부지사', si:'동구',     dong:'방어동'},
+  {b:'울산중부지사', si:'동구',     dong:'서부동'},
+  {b:'울산중부지사', si:'중구',     dong:'남외동'},
+  {b:'울산중부지사', si:'중구',     dong:'반구동'},
   // 진주동부지사
-  {si:'진주시',   dong:'하대동'},
+  {b:'진주동부지사', si:'진주시',   dong:'충무공동'},
   // 진주서부지사
-  {si:'진주시',   dong:'칠암동'},
+  {b:'진주서부지사', si:'진주시',   dong:'평거동'},
   // 창원남부지사
-  {si:'마산합포구', dong:'산호동'},
-  {si:'진해구',     dong:'용원동'},
+  {b:'창원남부지사', si:'창원시',   dong:'용원동'},
   // 창원동부지사
-  {si:'성산구',   dong:'가음동'},
-  {si:'성산구',   dong:'상남동'},
+  {b:'창원동부지사', si:'창원시',   dong:'상남동'},
+  {b:'창원동부지사', si:'창원시',   dong:'중앙동'},
   // 창원북부지사
-  {si:'밀양시',   dong:'내이동'},
-  {si:'밀양시',   dong:'삼문동'},
-  {si:'의창구',   dong:'명곡동'},
-  {si:'의창구',   dong:'봉곡동'},
-  {si:'의창구',   dong:'사림동'},
-  {si:'의창구',   dong:'서상동'},
-  {si:'의창구',   dong:'소답동'},
-  {si:'의창구',   dong:'중동'},
-  {si:'의창구',   dong:'팔용동'},
+  {b:'창원북부지사', si:'밀양시',   dong:'가곡동'},
+  {b:'창원북부지사', si:'밀양시',   dong:'삼문동'},
+  {b:'창원북부지사', si:'창원시',   dong:'도계동'},
+  {b:'창원북부지사', si:'창원시',   dong:'팔용동'},
   // 창원서부지사
-  {si:'마산회원구', dong:'내서읍'},
+  {b:'창원서부지사', si:'창원시',   dong:'양덕동'},
+  {b:'창원서부지사', si:'창원시',   dong:'합성동'},
   // 해운대지사
-  {si:'해운대구', dong:'우동'},
-  {si:'해운대구', dong:'중동'},
+  {b:'해운대지사',   si:'해운대구', dong:'좌동'},
 ];
-function isRedzone(addr) {
+function isRedzone(addr, branch) {
   if (!addr) return false;
   for (const r of REDZONE) {
+    if (branch && r.b !== branch) continue;
     if (!addr.includes(r.si)) continue;
     if (!addr.includes(r.dong)) continue;
-    if (r.city && !addr.includes(r.city)) continue;
     return true;
   }
   return false;
@@ -566,7 +562,7 @@ function saveViewState() {
 // Firebase 초기화 및 앱 시작 (비밀번호 인증 후 호출)
 // ★ 업데이트 공지 팝업
 // 새 공지를 올릴 때는 이 버전 문자열만 바꾸면, 예전에 "일주일 안 보기"를 누른 사람에게도 다시 노출됩니다.
-const NOTICE_VERSION = '2026-q3-redzone-mapfix';
+const NOTICE_VERSION = '2026-q4-redzone';
 function showNoticeIfNeeded() {
   try {
     const saved = JSON.parse(localStorage.getItem('bsr_notice_dismiss') || '{}');
@@ -720,7 +716,7 @@ function getFiltered() {
       if (d.openDate >= d60 || d.openDate < d90) return false;
     }
     if (q && !d.name?.toLowerCase().includes(q) && !d.addr?.toLowerCase().includes(q) && !d.dong?.includes(q)) return false;
-    if (curRedzone && !isRedzone(d.addr)) return false;
+    if (curRedzone && !isRedzone(d.addr, d.branch)) return false;
     return true;
   });
 }
@@ -732,7 +728,7 @@ function updateStats(list) {
   document.getElementById('s-visited').textContent  = list.filter(d=>d.status==='방문완료').length;
   document.getElementById('s-revisit').textContent  = list.filter(d=>d.status==='재방문예정').length;
   document.getElementById('s-contract').textContent = list.filter(d=>d.contract==='계약완료').length;
-  document.getElementById('s-redzone').textContent  = list.filter(d=>isRedzone(d.addr)).length;
+  document.getElementById('s-redzone').textContent  = list.filter(d=>isRedzone(d.addr, d.branch)).length;
 }
 
 // 배지
@@ -764,7 +760,7 @@ function cardHtml(d) {
       <span class="tag">${d.type||''}</span>
       <span class="cat-tag">${d.category||''}</span>
       ${d.dong?`<span class="dong-tag">${d.dong}</span>`:''}
-      ${isRedzone(d.addr)?'<span class="redzone-tag">🔴레드존</span>':''}
+      ${isRedzone(d.addr, d.branch)?'<span class="redzone-tag">🔴레드존</span>':''}
       <span class="odate">개업 ${d.openDate||''}</span>
       ${isNew?'<span class="new-tag">NEW</span>':''}
     </div>
@@ -839,7 +835,7 @@ function openPanel(key) {
   document.getElementById('p-meta').innerHTML =
     `${badgeHtml(d)}<span class="tag">${d.type||''}</span><span class="cat-tag">${d.category||''}</span>`
     + (d.dong?`<span class="dong-tag">${d.dong}</span>`:'')
-    + (isRedzone(d.addr)?'<span class="redzone-tag">🔴레드존</span>':'')
+    + (isRedzone(d.addr, d.branch)?'<span class="redzone-tag">🔴레드존</span>':'')
     + (d.openDate>=CUTOFF_NEW?'<span class="new-tag">NEW</span>':'');
 
   document.getElementById('p-body').innerHTML = `
